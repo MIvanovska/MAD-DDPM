@@ -7,7 +7,7 @@ detection tasks. The first branch models the distribution on bona-fide samples d
 
 ![MAD-DDPM](MAD_DDPM.png)
 
-For more information please refer to the paper available [here]().
+For more information please refer to the paper available [here](https://lmi.fe.uni-lj.si/wp-content/uploads/2023/06/IWBF2023___Face_Morphing_Attack_Detection_with_Denoising_Diffusion_Probabilistic_Models.pdf).
 
 ## 1. Install the dependencis
 The model is implemented using PyTorch. The full list of used libraries can be found in requirements.txt.
