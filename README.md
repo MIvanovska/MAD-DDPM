@@ -78,9 +78,10 @@ If you find this code useful or you want to refer to the paper, please cite usin
 ```
 @INPROCEEDINGS{ivanovska2023mad_ddpm,
   author={Ivanovska, Marija and Štruc, Vitomir},
-  booktitle={2023 International Workshop on Biometrics and Forensics (IWBF)}, 
+  booktitle={2023 11th International Workshop on Biometrics and Forensics (IWBF)}, 
   title={Face Morphing Attack Detection with Denoising Diffusion Probabilistic Models}, 
-  year={2023}}
+  year={2023},
+  doi={10.1109/IWBF57495.2023.10156877}}}
 ```
 
 ## Acknowledgements
