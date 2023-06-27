@@ -48,11 +48,13 @@ def main():
             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
         ])
         features_flag = False
+        images_flag = True
     if args.branch==2:
         branch = "model_features"
         assert len(config[branch]['input_size']) == 2 and config[branch]['input_size'][0] == config[branch]['input_size'][1]
         tf = None
         features_flag = True
+        images_flag = False
     ###########################################################################################
     # initialize the model
     inner_model = K.ImageDenoiserModelV1(c_in=config[branch]['input_channels'],
@@ -70,12 +72,12 @@ def main():
 
     ###########################################################################################
     # initialize the dataloaders
-    train_set = ImageFolder(args.train_set, transform=tf, args=args, features=features_flag)
+    train_set = ImageFolder(args.train_set, transform=tf, load_images=images_flag, features=features_flag)
     train_dl = data.DataLoader(train_set, args.batch_size, shuffle=False, drop_last=True,
                                num_workers=args.num_workers, persistent_workers=True)
     if args.test_every !=-1:
         assert args.test_set != ""
-        test_set = ImageFolder(args.test_set, transform=tf, args=args, features=features_flag)
+        test_set = ImageFolder(args.test_set, transform=tf, load_images=images_flag, features=features_flag)
         test_dl = data.DataLoader(test_set, args.batch_size, shuffle=False, drop_last=False,
                                   num_workers=args.num_workers, persistent_workers=True)
 

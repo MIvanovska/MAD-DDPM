@@ -26,37 +26,51 @@ def is_image_file(filename):
     """
     return has_file_allowed_extension(filename, IMG_EXTENSIONS)
 
-def make_dataset(dir, extensions=None, is_valid_file=None, features=None):
-    images = []
+def make_dataset(dir, extensions=None, is_valid_file=None, load_images=None, features=None):
+    samples = []
     if not ((extensions is None) ^ (is_valid_file is None)):
         raise ValueError("Both extensions and is_valid_file cannot be None or not None at the same time")
     if extensions is not None:
         def is_valid_file(x):
-            return has_file_allowed_extension(x, extensions)
-
-    if features:
+            return has_file_allowed_extension(x, extensions) and os.path.isfile(x)
+    if load_images:
+        files = glob(os.path.join(dir, "images", "*", "*", "*"))
+    elif features and not load_images:
         files = glob(os.path.join(dir, "features_scale_1", "*", "*", "*"))
     else:
-        files = glob(os.path.join(dir, "images", "*", "*", "*"))
+        files=None
 
     for path in sorted(files):
-        if is_valid_file(path):
-            target = 0
-            if "/morphs/" in path:
-                target=1
-            item = (path, target)
-            images.append(item)
-    return images
+        target = 0
+        if "/morphs/" in path:
+            target = 1
+        # check if files exist/are valid
+        if load_images and not features:
+            if is_valid_file(path):
+                item = (path, target)
+                samples.append(item)
+        elif features and not load_images:
+            if is_valid_file(path) and is_valid_file(path.replace("/features_scale_1/", "/features_scale_2/")):
+                item = (path, target)
+                samples.append(item)
+        elif load_images and features:
+            if is_valid_file(path) and is_valid_file(path.replace("/images/", "/features_scale_1/")+".pt") and is_valid_file(path.replace("/images/", "/features_scale_2/")+".pt"):
+                item = (path, target)
+                samples.append(item)
+        else:
+            continue
+    return samples
 
 class DatasetFolder(VisionDataset):
 
     def __init__(self, root, loader, extensions=None, transform=None,
-                 target_transform=None, is_valid_file=None, args=None, features=False):
+                 target_transform=None, is_valid_file=None, load_images=False, features=False):
         super(DatasetFolder, self).__init__(root, transform=transform,
                                             target_transform=target_transform)
         # write one generic and few dataset-specific functions make_dataset()
         self.features=features
-        samples = make_dataset(self.root, extensions, is_valid_file, features=self.features)
+        self.load_images = load_images
+        samples = make_dataset(self.root, extensions, is_valid_file, load_images=load_images, features=self.features)
         if len(samples) == 0:
             raise (RuntimeError("Found 0 files in subfolders of: " + self.root + "\n"
                                 "Supported extensions are: " + ",".join(extensions)))
@@ -70,14 +84,21 @@ class DatasetFolder(VisionDataset):
     def __getitem__(self, index):
         path, target = self.samples[index]
         try:
-            sample=None
-            if self.features:
+            if self.features and not self.load_images: # load only feature maps
                 # load feature tensors
                 sample = cat((load(path).unsqueeze(0), load(path.replace("/features_scale_1/", "/features_scale_2/"))), dim=0)
-            else:
+            elif self.load_images and not self.features: # load only images
                 sample = self.loader(path)
-            if self.transform is not None:
-                sample = self.transform(sample)
+                if self.transform is not None:
+                    sample = self.transform(sample)
+            elif self.load_images and self.features: # load both, images and features
+                img = self.loader(path)
+                if self.transform is not None:
+                    img = self.transform(img)
+                features = cat((load(path.replace("/images/", "/features_scale_1/")+".pt").unsqueeze(0), load(path.replace("/images/", "/features_scale_2/")+".pt")), dim=0)
+                sample=(img, features)
+            else:
+                sample=None
         except:
             print("Error: {} was not loaded ".format(path))
 
@@ -98,11 +119,11 @@ def default_loader(path):
 class ImageFolder(DatasetFolder):
 
     def __init__(self, root, transform=None, target_transform=None,
-                 loader=default_loader, is_valid_file=None, args=None, features=False):
+                 loader=default_loader, is_valid_file=None, load_images=False, features=False):
         super(ImageFolder, self).__init__(root, loader, IMG_EXTENSIONS if is_valid_file is None else None,
                                           transform=transform,
                                           target_transform=target_transform,
                                           is_valid_file=is_valid_file,
-                                          args=args,
+                                          load_images=load_images,
                                           features=features)
         self.imgs = self.samples
