@@ -49,19 +49,24 @@ Dataset_name
 │   ...
 ```
 
-Images are expected to have one of the following image extensions: '.jpg', '.jpeg' or '.png'. Their corresponding pre-extracted feature maps should be saved with the same name in '.pt' format (PyTorch tensors). features_scale_1 is the root directory of features extracted from cropped face images of size 224x224 pixels, while features_scale_2 contains features of images of size 448x448 pixels.
+Images are expected to have one of the following image extensions: '.jpg', '.jpeg' or '.png'. Their corresponding pre-extracted feature maps should be saved with the same name in '.pt' format (PyTorch tensors). features_scale_1 is the root directory of features extracted from cropped face images of size 224x224 pixels (tensor size is 1024x14x14), while features_scale_2 contains features of images of size 448x448 pixels (tensor size is 4x1024x14x14).
 
 MAD-DDPM is trained and tested on preprocessed datasets, where faces were first detected with RetinaFace, then cropped out with a margin of 5% of the detected bounding box height. Corresponding feature maps are extracted with a pretrained WideResNet. For more details please refer to the paper.
 
 ## 3. Training
-To train the image branch MAD-DDPM on your dataset, run the following:
+To train the **image branch** MAD-DDPM on your dataset, run the following:
 ```
 python train.py --train-set ./data/CASIA-WebFace/ --config configs/casia_webface.json --branch 1
 ```
-To train the branch for features, set the value of the argument branch to 2:
+To train with evaluation on a testing set after each training epoch run:
+```
+python train.py --train-set ./data/CASIA-WebFace/ --config configs/casia_webface.json --branch 1 --test-every 1 --test-set ./data/FRGC/
+```
+To train the **branch for features**, set the value of the argument branch to 2:
 ```
 python train.py --train-set ./data/CASIA-WebFace/ --config configs/casia_webface.json --branch 2
 ```
+Checkpoints are by default exported to the directory named output. 
 
 ## 4. Evaluation
 To test a pretrained MAD-DDPM model run the following:
