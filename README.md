@@ -16,25 +16,52 @@ pip install -r requirements.txt
 ```
 
 ## 2. Prepare the data
-The dataset you are using for training should have the following directory structure where the names of individual classes are represented with unique numbers or strings:
+The dataset you are using for training should have the following directory structure:
 ```
 Dataset_name
-├── id_1
-│   └── id_1_img_0.png
-│   └── id_1_img_1.png
-|   ...
-├── id_2
-│   └── id_2_img_0.png
-│   └── id_2_img_1.png
-|   ...
-...
+├── images
+│   ├── bonafide
+│   │   ├── raw
+│   │   │   └── bonafide_img_1.png
+│   │   │   └── bonafide_img_2.png
+│   │   │   └── ...
+│   ├── morphs
+│   │   ├── morphing_method_1
+│   │   │   └── morph_img_1.png
+│   │   │   └── morph_img_2.png
+│   │   │   └── ...
+│   │   ├── morphing_method_2
+│   │   ...
+├── features_scale_1
+│   ├── bonafide
+│   │   ├── raw
+│   │   │   └── bonafide_img_1.pt
+│   │   │   └── bonafide_img_2.pt
+│   │   │   └── ...
+│   ├── morphs
+│   │   ├── morphing_method_1
+│   │   │   └── morph_img_1.pt
+│   │   │   └── morph_img_2.pt
+│   │   │   └── ...
+│   │   ├── morphing_method_2
+│   │   ...
+├── features_scale_2
+│   ...
 ```
+Images are expected to have one of the following image extensions: '.jpg', '.jpeg' or '.png'. Their corresponding pre-extracted feature maps should be saved with the same name in '.pt' format (PyTorch tensors). 
+
+MAD-DDPM is trained and tested on preprocessed datasets, where faces were first detected with RetinaFace, then cropped out with a margin of 5% of the detected bounding box height. Corresponding feature maps are extracted with a pretrained WideResNet. For more details please refer to the paper.
 
 ## 3. Training
-To train MAD-DDPM on Dataset_name, run the following:
+To train the image branch MAD-DDPM on your dataset, run the following:
 ```
 python train.py 
 ```
+To train the branch for features, set the value of the argument branch to 2:
+```
+python train.py 
+```
+
 ## 4. Evaluation
 To test a pretrained MAD-DDPM model run the following:
 ```
